@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ post_form.as_p }}
+    <label for="categories">Categorías:</label><br>
+    <select multiple="multiple" name="categories" id="categories">
+        {% for category in categories %}
+            <option value="{{ category.id }}">{{ category.name }}</option>
+        {% endfor %}
+    </select><br>
+    <input type="submit" value="Submit">
+</form>
+{% endblock %}
