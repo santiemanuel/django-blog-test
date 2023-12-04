@@ -1,36 +1,60 @@
 from django.shortcuts import render
-from .models import Post, Category, PostCategory
+from .models import Post, Category, PostCategory, Comment
 from .forms.form_blog import PostForm
+from .forms.comment_form import CommentForm
+from django.utils import timezone
 from django.shortcuts import redirect
 from django.utils.text import slugify
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
 
 
 def posts(request):
-    posts = Post.objects.all()
+    posts = Post.objects.all()  # Obtener todos los posts
+    print("Todos los posts: ", posts)
+    return render(request, 'blog/posts_list.html', {'posts': posts})
 
-    COLORS = {
-        '1': 'text-bg-primary',
-        '2': 'text-bg-secondary',
-        '3': 'text-bg-success',
-    }
-    post_list = []
-    for post in posts:
-        categories = post.categories.all()
-        cat_colors = {category.id: COLORS[str(category.color)] for category in categories}
+def posts_by_category(request, slug):
+    category = get_object_or_404(Category, slug=slug)
+    posts_in_category = Post.objects.filter(categories=category)
+    return render(request, 'blog/posts_list.html', {'posts': posts_in_category})
 
-        post_info = {
-            'title': post.title,
-            'create_at': post.create_at,
-            'content': post.content,
-            'categories': cat_colors
-        }
-        post_list.append(post_info)
+def post_detail(request, slug):
+    # Usar get_object_or_404 para manejar mejor los casos en que el post no exista
+    post = get_object_or_404(Post, slug=slug)
 
-    context = {
-        'posts': post_list
-    }
-    return render(request, context=context, template_name='blog/posts.html')
+    # Incrementar el conteo de vistas
+    post.views_count += 1
+    post.save(update_fields=['views_count'])
 
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.comment_post = post
+            comment.save()
+            post.comments_count = post.comments.all().count()  # Actualizar el conteo de comentarios
+            post.save(update_fields=['comments_count'])
+            # Redirigir al post para ver el comentario publicado
+            return redirect('post_detail', slug=post.slug)
+    else:
+        form = CommentForm()
+
+    return render(request, 'blog/post_detail.html', {'post': post, 'form': form})
+
+@require_POST
+def like_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    post.likes_count += 1
+    post.save(update_fields=['likes_count'])
+    return redirect('post_detail', slug=post.slug)
+
+@require_POST
+def like_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    comment.likes_count += 1
+    comment.save(update_fields=['likes_count'])
+    return redirect('post_detail', slug=comment.comment_post.slug)  # Redirecciona de nuevo al post
 
 def create_post(request):
     if request.method == 'POST':
