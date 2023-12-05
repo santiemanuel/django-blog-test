@@ -11,7 +11,6 @@ from django.views.decorators.http import require_POST
 
 def posts(request):
     posts = Post.objects.all()  # Obtener todos los posts
-    print("Todos los posts: ", posts)
     return render(request, 'blog/posts_list.html', {'posts': posts})
 
 def posts_by_category(request, slug):
@@ -74,4 +73,8 @@ def create_post(request):
         post_form = PostForm()
         categories = Category.objects.all()
 
-    return render(request, 'blog/post_form.html', {'post_form': post_form, 'categories': categories})
+    context = {
+                'post_form': post_form,
+                'categories': categories
+              }
+    return render(request, 'blog/post_form.html', context)
