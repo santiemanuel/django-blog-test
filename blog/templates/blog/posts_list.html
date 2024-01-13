@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% load martortags %}
+
 {% block title %}Blog Posts{% endblock %}
 
 {% block content %}
@@ -14,7 +16,7 @@
             {% endfor %}
         </div>
         <div class="ui raised segment">
-            <p>{{ post.content|truncatewords:50 }}</p>
+            <p>{{ post.content|truncatewords:50|safe_markdown }}</p>
             <a href="{% url 'post_detail' post.slug %}" class="ui right floated button">Continuar leyendo</a>
             <a href="{% url 'post_detail' post.slug %}#comments" class="ui button">
                 {{ post.comments_count }} comentarios

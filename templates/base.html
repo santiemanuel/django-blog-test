@@ -13,6 +13,7 @@
     {% block styles %}
 
     {% endblock %}
+    {% block css %}{% endblock %}
 </head>
 <body>
 <div class="ui container">
@@ -28,6 +29,6 @@
         $('.ui.dropdown').dropdown();
     });
     </script>
-    
+    {% block js %}{% endblock %}
 </body>
 </html>

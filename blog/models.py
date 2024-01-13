@@ -4,6 +4,8 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib import admin
 from django.utils.text import slugify
 # Create your models here.
+from martor.models import MartorField
+
 
 class Category(models.Model):
     COLOR_CHOICES = (
@@ -44,7 +46,7 @@ class Post(models.Model):
     )  
 
     title = models.CharField(max_length=150, null=False)
-    content = models.TextField()
+    content = MartorField()
     create_at = models.DateField(auto_now_add=True)
     update_at = models.DateField(auto_now=True)
     categories = models.ManyToManyField(Category, through='PostCategory')
